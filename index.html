@@ -3,222 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Norwegian Vocabulary Quiz</title>
+    <title>Norwegian Quiz App</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <h1>Norwegian Vocabulary Quiz</h1>
-            <p class="app-subtitle">Learn Norwegian vocabulary with detailed statistics tracking</p>
-        </header>
-
-        <!-- Navigation -->
-        <nav class="app-nav">
-            <button class="nav-btn active" data-section="vocabulary">View Words</button>
-            <button class="nav-btn" data-section="add-words">Add Words</button>
-            <button class="nav-btn" data-section="quiz">Take Quiz</button>
-            <button class="nav-btn" data-section="practice">Practice Wrong</button>
-            <button class="nav-btn" data-section="stats">Statistics</button>
+    <div class="container">
+        <h1>Norwegian Vocabulary Quiz</h1>
+        <p class="subtitle">Master Norwegian with interactive quizzes and vocabulary management</p>
+        
+        <!-- Navigation Buttons -->
+        <nav class="nav-buttons">
+            <button class="btn btn--primary" onclick="showAddWords()">Add Words</button>
+            <button class="btn btn--primary" onclick="showViewWords()">View Vocabulary</button>
+            <button class="btn btn--primary" onclick="showQuiz()">Take Quiz</button>
+            <button class="btn btn--secondary" onclick="showStats()">Statistics</button>
         </nav>
 
-        <!-- Main Content -->
-        <main class="app-main">
+        <!-- Add Words Section -->
+        <div id="add-words" class="section">
+            <h2>Add New Words</h2>
+            <p class="section-description">Add your own Norwegian vocabulary to practice with</p>
+            <form onsubmit="addWord(event); return false;">
+                <div class="form-group">
+                    <label for="norwegian" class="form-label">Norwegian Word/Phrase:</label>
+                    <input type="text" id="norwegian" class="form-control" placeholder="Enter Norwegian word or phrase..." required>
+                </div>
+                <div class="form-group">
+                    <label for="english" class="form-label">English Translation:</label>
+                    <input type="text" id="english" class="form-control" placeholder="Enter English translation..." required>
+                </div>
+                <button type="submit" class="btn btn--primary btn--lg">Add Word</button>
+            </form>
+            <div id="add-message" class="success-message hidden"></div>
+        </div>
+
+        <!-- View Words Section -->
+        <div id="view-words" class="section hidden">
+            <div class="section-header">
+                <h2>Your Vocabulary (<span id="word-count">0</span> entries)</h2>
+                <div class="view-controls">
+                    <input type="text" id="search-input" class="form-control search-input" placeholder="Search vocabulary..." onkeyup="filterWords()">
+                    <button class="btn btn--outline" onclick="exportVocabulary()">Export</button>
+                </div>
+            </div>
+            <div id="word-list" class="word-list">
+                <!-- Words will appear here -->
+            </div>
+        </div>
+
+        <!-- Quiz Section -->
+        <div id="quiz" class="section hidden">
+            <div id="quiz-setup">
+                <h2>Take a Quiz</h2>
+                <p class="quiz-info">Test your knowledge with 10 random questions mixing multiple choice and fill-in-the-blank.</p>
+                <div class="quiz-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="available-questions">0</span>
+                        <span class="stat-label">Available Words</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="quizzes-taken">0</span>
+                        <span class="stat-label">Quizzes Taken</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="avg-score">0%</span>
+                        <span class="stat-label">Average Score</span>
+                    </div>
+                </div>
+                <button class="btn btn--primary btn--lg" onclick="startQuiz()" id="start-quiz-btn">Start 10-Question Quiz</button>
+                <div id="practice-section" class="practice-section hidden">
+                    <button class="btn btn--secondary" onclick="practiceWrongAnswers()">Practice Difficult Words</button>
+                    <span class="practice-count">(<span id="wrong-count">0</span> words need practice)</span>
+                </div>
+            </div>
             
-            <!-- Vocabulary List Section -->
-            <section id="vocabulary-section" class="content-section active">
-                <div class="section-header">
-                    <h2>Your Vocabulary</h2>
-                    <span class="word-count" id="word-count">0 words</span>
+            <div id="quiz-active" class="hidden">
+                <div class="quiz-header">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="quiz-info-bar">
+                        <span>Question <span id="current-q">1</span> of <span id="total-q">10</span></span>
+                        <span>Score: <span id="score">0</span></span>
+                    </div>
                 </div>
-                <div class="vocabulary-list" id="vocabulary-list">
-                    <!-- Vocabulary items will be populated here -->
+                <div class="question-box">
+                    <div class="question-type" id="question-type">Multiple Choice</div>
+                    <h3 id="question-text">Loading...</h3>
+                    <div id="answers" class="answers">
+                        <!-- Answer buttons will appear here -->
+                    </div>
+                    <div id="fill-in-answer" class="fill-in-container hidden">
+                        <input type="text" id="fill-in-input" class="form-control fill-in-input" placeholder="Type your answer in Norwegian..." onkeyup="checkEnterKey(event)">
+                        <button class="btn btn--primary" onclick="submitFillIn()">Submit Answer</button>
+                    </div>
                 </div>
-            </section>
+            </div>
+            
+            <div id="quiz-results" class="hidden">
+                <div class="results-header">
+                    <h2>Quiz Complete!</h2>
+                    <div class="score-display">
+                        <span class="final-score"><span id="final-score">0</span>/<span id="final-total">0</span></span>
+                        <span class="score-percentage" id="score-percentage">0%</span>
+                    </div>
+                </div>
+                <div class="results-details" id="results-details">
+                    <!-- Detailed results will appear here -->
+                </div>
+                <div class="results-actions">
+                    <button class="btn btn--primary" onclick="resetQuiz()">Take Another Quiz</button>
+                    <button class="btn btn--secondary" onclick="showViewWords()">Review Vocabulary</button>
+                </div>
+            </div>
+        </div>
 
-            <!-- Add Words Section -->
-            <section id="add-words-section" class="content-section">
-                <div class="section-header">
-                    <h2>Add New Words</h2>
-                    <p class="section-description">Add Norwegian words with their English translations to build your vocabulary.</p>
+        <!-- Statistics Section -->
+        <div id="stats" class="section hidden">
+            <h2>Learning Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Vocabulary</h3>
+                    <div class="big-number" id="total-vocab">0</div>
                 </div>
-                
-                <!-- Success Message -->
-                <div class="success-message hidden" id="success-message">
-                    <p>✅ Word added successfully!</p>
+                <div class="stat-card">
+                    <h3>Quizzes Completed</h3>
+                    <div class="big-number" id="total-quizzes">0</div>
                 </div>
-
-                <!-- Add Word Form -->
-                <div class="add-word-container">
-                    <form class="add-word-form" id="add-word-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label" for="norwegian-input">Norwegian Word:</label>
-                                <input type="text" id="norwegian-input" class="form-control" placeholder="Enter Norwegian word..." required>
-                                <div class="field-error hidden" id="norwegian-error">Norwegian word is required</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="english-input">English Translation:</label>
-                                <input type="text" id="english-input" class="form-control" placeholder="Enter English translation..." required>
-                                <div class="field-error hidden" id="english-error">English translation is required</div>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn--primary btn--lg" id="add-word-btn">Add Word</button>
-                            <button type="button" class="btn btn--secondary" id="cancel-edit" style="display: none;">Cancel Edit</button>
-                        </div>
-                    </form>
+                <div class="stat-card">
+                    <h3>Overall Accuracy</h3>
+                    <div class="big-number" id="overall-accuracy">0%</div>
                 </div>
-
-                <!-- Quick Add Tips -->
-                <div class="tips-section">
-                    <h3>Quick Tips:</h3>
-                    <ul>
-                        <li>Make sure to include proper Norwegian characters (å, æ, ø)</li>
-                        <li>You can add verbs in infinitive form (e.g., "å spise" = "to eat")</li>
-                        <li>Added words will immediately appear in your vocabulary and quizzes</li>
-                    </ul>
+                <div class="stat-card">
+                    <h3>Words Mastered</h3>
+                    <div class="big-number" id="words-mastered">0</div>
                 </div>
-            </section>
-
-            <!-- Quiz Section -->
-            <section id="quiz-section" class="content-section">
-                <div class="quiz-setup" id="quiz-setup">
-                    <div class="section-header">
-                        <h2>Take a Quiz</h2>
-                        <p class="section-description">Test your Norwegian vocabulary knowledge with exactly 10 mixed questions</p>
-                    </div>
-                    <div class="quiz-info">
-                        <div class="quiz-feature">
-                            <strong>📊 Quiz Format:</strong> Exactly 10 questions per quiz
-                        </div>
-                        <div class="quiz-feature">
-                            <strong>🎯 Question Types:</strong> 50% Multiple Choice + 50% Fill-in-the-Blank
-                        </div>
-                        <div class="quiz-feature">
-                            <strong>📈 Statistics:</strong> Track your progress on every word
-                        </div>
-                    </div>
-                    <button class="btn btn--primary btn--lg btn--full-width" id="start-quiz">Start 10-Question Quiz</button>
+            </div>
+            <div class="difficult-words">
+                <h3>Words Needing Practice</h3>
+                <div id="difficult-words-list" class="difficult-list">
+                    <!-- Difficult words will appear here -->
                 </div>
-
-                <div class="quiz-container hidden" id="quiz-container">
-                    <div class="quiz-header">
-                        <div class="quiz-progress">
-                            Question <span class="current-question">1</span> of <span class="total-questions">10</span>
-                        </div>
-                        <div class="quiz-type-indicator">
-                            <span class="question-type" id="question-type">Multiple Choice</span>
-                        </div>
-                        <div class="quiz-score">
-                            Score: <span class="correct-count">0</span> / <span class="answered-count">0</span>
-                        </div>
-                    </div>
-
-                    <div class="question-container">
-                        <div class="question-text" id="question-text">Loading...</div>
-                        
-                        <!-- Multiple Choice Options -->
-                        <div class="answer-options" id="answer-options">
-                            <button class="answer-btn" data-answer="0">Option A</button>
-                            <button class="answer-btn" data-answer="1">Option B</button>
-                            <button class="answer-btn" data-answer="2">Option C</button>
-                            <button class="answer-btn" data-answer="3">Option D</button>
-                        </div>
-
-                        <!-- Fill-in Answer -->
-                        <div class="fill-in-container hidden" id="fill-in-container">
-                            <div class="fill-in-hint">Type your answer below (case-insensitive):</div>
-                            <input type="text" class="form-control answer-input" id="answer-input" placeholder="Type your answer...">
-                            <button class="btn btn--primary" id="submit-answer">Submit Answer</button>
-                        </div>
-                    </div>
-
-                    <div class="question-feedback hidden" id="question-feedback">
-                        <div class="feedback-text"></div>
-                        <button class="btn btn--primary" id="next-question">Next Question</button>
-                    </div>
-                </div>
-
-                <div class="quiz-results hidden" id="quiz-results">
-                    <div class="results-header">
-                        <h2>Quiz Complete!</h2>
-                        <div class="final-score">
-                            Your Score: <span class="score-percentage">0%</span>
-                        </div>
-                    </div>
-                    <div class="results-details">
-                        <p>You got <span class="final-correct">0</span> out of <span class="final-total">10</span> questions correct.</p>
-                        <div class="wrong-answers" id="results-wrong-answers">
-                            <!-- Wrong answers will be displayed here -->
-                        </div>
-                    </div>
-                    <div class="results-actions">
-                        <button class="btn btn--primary" id="take-another-quiz">Take Another Quiz</button>
-                        <button class="btn btn--secondary" id="practice-wrong-btn">Practice Wrong Answers</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Practice Wrong Answers Section -->
-            <section id="practice-section" class="content-section">
-                <div class="section-header">
-                    <h2>Practice Wrong Answers</h2>
-                    <span class="wrong-count" id="wrong-count">0 words to review</span>
-                </div>
-                <div class="practice-content" id="practice-content">
-                    <p class="empty-message">No wrong answers to practice. Take a quiz to get started!</p>
-                </div>
-            </section>
-
-            <!-- Statistics Section -->
-            <section id="stats-section" class="content-section">
-                <div class="section-header">
-                    <h2>Your Statistics</h2>
-                </div>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Total Words</h3>
-                        <div class="stat-number" id="total-words-stat">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Quizzes Taken</h3>
-                        <div class="stat-number" id="quizzes-taken-stat">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Overall Accuracy</h3>
-                        <div class="stat-number" id="overall-accuracy-stat">0%</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Questions</h3>
-                        <div class="stat-number" id="total-questions-stat">0</div>
-                    </div>
-                </div>
-
-                <!-- Most Challenging Words -->
-                <div class="challenging-words-section">
-                    <h3>Most Challenging Words</h3>
-                    <div class="challenging-words-list" id="challenging-words-list">
-                        <p class="empty-message">Take some quizzes to see your most challenging words!</p>
-                    </div>
-                </div>
-
-                <!-- Word Statistics -->
-                <div class="word-stats-section">
-                    <h3>Word Statistics</h3>
-                    <div class="word-stats-controls">
-                        <button class="btn btn--secondary" id="show-all-words">Show All Words</button>
-                        <button class="btn btn--outline" id="show-practiced-only">Show Practiced Only</button>
-                    </div>
-                    <div class="word-stats-list" id="word-stats-list">
-                        <p class="empty-message">Word statistics will appear here after taking quizzes.</p>
-                    </div>
-                </div>
-            </section>
-
-        </main>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
